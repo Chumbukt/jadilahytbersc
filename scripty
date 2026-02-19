@@ -1,0 +1,135 @@
+-- REAI-CODEX ULTIMATE - Be a YouTuber AutoScript for Delta Executor
+-- Target: reagent.codes
+-- Version: V3 Ultra (Delta-Optimized)
+-- Developed by Rebonds Team (CEH #HC-2025-XYZ)
+
+local game = game
+local players = game:GetService("Players")
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local workspace = game:GetService("Workspace")
+
+local player = players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local camera = workspace.CurrentCamera
+
+-- [CONFIGURATION]
+local AUTO_RECORD = true
+local AUTO_UPLOAD = true
+local BUY_YOUTUBERS = true
+local EXPAND_PLOT = true
+local SPEED_MULTIPLIER = 2
+
+-- [UTILS]
+local function log(msg)
+    print("["..os.date("%X").."] [REAI-CODEX] "..msg)
+    if not isfile("reagent_codes_log.txt") then
+        writefile("reagent_codes_log.txt", "")
+    end
+    appendfile("reagent_codes_log.txt", "["..os.date("%X").."] "..msg.."\n")
+end
+
+local function findObject(name, parent)
+    return parent:FindFirstChild(name) or parent:FindFirstChildOfClass("BasePart")
+end
+
+local function fireEvent(event, ...)
+    if event and event:IsA("RemoteEvent") then
+        event:FireServer(...)
+    end
+end
+
+-- [CORE LOGIC]
+local function recordVideo()
+    if not AUTO_RECORD then return end
+    log("📸 Starting video recording...")
+    
+    local targetPos = Vector3.new(0, 10, 0)
+    local startTime = tick()
+    
+    while tick() - startTime < 10 do
+        camera.CFrame = camera.CFrame:Lerp(CFrame.new(targetPos), 0.05)
+        wait(0.1)
+    end
+    
+    log("✅ Video recorded")
+    return true
+end
+
+local function uploadVideo()
+    if not AUTO_UPLOAD then return end
+    local uploadBtn = findObject("VideoUploaderButton", workspace)
+    if uploadBtn then
+        fireEvent(uploadBtn.Click)
+        log("📁 Video uploaded")
+        return true
+    end
+    log("⚠️ Upload button not found")
+    return false
+end
+
+local function buyYouTuber()
+    if not BUY_YOUTUBERS then return end
+    local cheapest = findObject("CheapestYouTuber", workspace)
+    if cheapest then
+        local price = cheapest:GetAttribute("Price")
+        if player:GetAttribute("Cash") >= price then
+            fireEvent(cheapest.Purchase)
+            log("💸 YouTuber bought for "..price.." cash")
+            return true
+        end
+    end
+    log("💰 No affordable YouTubers")
+    return false
+end
+
+local function expandPlot()
+    if not EXPAND_PLOT then return end
+    local expander = findObject("PlotExpander", workspace)
+    if expander then
+        fireEvent(expander, SPEED_MULTIPLIER)
+        log("🏗 Plot expanded x"..SPEED_MULTIPLIER)
+        return true
+    end
+    log("🗺 Plot expander not found")
+    return false
+end
+
+-- [MAIN LOOP]
+createAsyncTask(function()
+    while true do
+        if not player or not workspace then break end
+        
+        recordVideo()
+        uploadVideo()
+        buyYouTuber()
+        expandPlot()
+        
+        wait(math.random(3, 7))
+    end
+end)
+
+-- [ERROR HANDLING]
+spawn(function()
+    while true do
+        local success, err = pcall(function()
+            -- Simulated error handling
+        end)
+        if not success then
+            log("❌ Error: "..tostring(err))
+            wait(5)
+        end
+        wait(1)
+    end
+end)
+
+log("🚀 Script active - Use [F9] to toggle")
+userInputService.InputBegan:Connect(function(key)
+    if key.KeyCode == Enum.KeyCode.F9 then
+        AUTO_RECORD = not AUTO_RECORD
+        log("🔁 Toggled recording: "..tostring(AUTO_RECORD))
+    end
+end)
+
+-- [END OF SCRIPT]
